@@ -1,5 +1,4 @@
-
-
+# By Vivian
 
 # two ways of calculating the retarded green's function in code! 
 # (I like the phrase "time-retarded" but the internet may be more helpful without saying "time")
