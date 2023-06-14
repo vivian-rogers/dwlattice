@@ -25,3 +25,10 @@ function genGʳ(H::Function)
 	end
 	return Gʳ
 end
+
+function genGʳ_nok(H::Function)
+	function Gʳ(ω::Union{Float64, ComplexF64})
+		return inv(ω*I - im*H(0.0))
+	end
+	return Gʳ
+end
