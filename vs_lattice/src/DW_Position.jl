@@ -38,18 +38,22 @@ x = genFiring_neuron_DWpos(1/ΔT)
 
 T, ω_val, mag, ϕ = transferFunc(AFM2R_lattice, 5, 1, 2, start_f, stop_f, 200)
 
-function DWPosition(x::Function, Δt::Float64, N::Int, total::Float64, T)
+function DWPosition(x::Function, Δt::Float64, N::Int, total::Float64, T::Function)
     # Array of harmonic #s and corresponding Magnitude 
-    range, aₙ = Mag_Harmonics(x,Δt, N, total)
+    f₀
+    range, aₙvals = Mag_Harmonics(x,Δt, N, total)
+    ωvals = (2π/Δt).*range
+    bₙvals = aₙvals.*T.(ωvals)
+    y = invFT(range,bₙvals,f₀)
     # range in frequency.
-    ω_val = zeros(convert(Int, total))
-    @. ω_val = range /Δt
+    #ω_val = zeros(convert(Int, total))
+    #@. ω_val = range /Δt
     # Array of Transfer Function magnitudes for corresponding freqs.
-    T_mag = zeros(convert(Int, total))
-    @. T_mag = (abs∘T).(ω_val)
+    #T_mag = zeros(convert(Int, total))
+    #@. T_mag = (abs∘T).(ω_val)
     # Property: Inverse Fourier is sum of Fourier * Fourier (Magnitude)
-    y = zeros(convert(Int, total))
-    @. y = aₙ * T_mag
+    #y = zeros(convert(Int, total))
+    #@. y = aₙ * T_mag
     
     return y
 end
