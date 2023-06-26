@@ -38,7 +38,7 @@ x = genFiring_neuron_DWpos(1/ΔT)
 
 T, ω_val, mag, ϕ = transferFunc(AFM2R_lattice, 5, 1, 2, start_f, stop_f, 200)
 
-function DWPosition(x, Δt::Float64, N::Int, total::Float64, T)
+function DWPosition(x::Function, Δt::Float64, N::Int, total::Float64, T)
     # Array of harmonic #s and corresponding Magnitude 
     range, aₙ = Mag_Harmonics(x,Δt, N, total)
     # range in frequency.
