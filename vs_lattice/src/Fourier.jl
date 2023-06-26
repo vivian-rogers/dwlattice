@@ -62,14 +62,17 @@ function invFT(harmonic_indices::Vector{Int},aₙcoeffs::Vector{ComplexF64},f₀
 end
 
 f₀ = 1.0
-ls ../squ_harm, squ_mag = Mag_Harmonics(genFiring_neuron_DWpos(f₀), 1/f₀, 50, 11)
+squ_harm, squ_mag = Mag_Harmonics(genFiring_neuron_DWpos(f₀), 1/f₀, 50, 50)
 #squ_harm, squ_mag = Mag_Harmonics(squarewave, 2pi, 50, 11.0)
 
+function Plot_Spectrum(harmonics, magnitude)
+    # Plot
+    plot(harmonics, real.(magnitude), line=:stem,c="blue")
+    plot!(harmonics, imag.(magnitude), line=:stem,c="red")
+    title!("Magnitude of Harmonics")
+    xlabel!("n (ᵗʰ harmonic)")
+    ylabel!("Magnitude")
+end
 
-# Plot
-plot(squ_harm, real.(squ_mag), line=:stem,c="blue")
-plot!(squ_harm, imag.(squ_mag), line=:stem,c="red")
-title!("Magnitude of Harmonics")
-xlabel!("n (ᵗʰ harmonic)")
-ylabel!("Magnitude")
-savefig("img/Harmonic_Mag.png")
+Plot_Spectrum(squ_harm, squ_mag)
+savefig("vs_lattice/img/Harmonic_Mag.png")
