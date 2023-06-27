@@ -1,15 +1,16 @@
 # Specific Imports.
 include("DW_Lattice.jl")
+include("PlotStuff.jl")
 include("Fourier.jl")
 
 # units
-μm = 10^-6; GHz = 10^9; 
+μm = 10^-6; GHz = 1; 
 
 testSystem = DWLattice(2, [0, 2.5]*μm, [1,-1], 5*μm, [0.1,0.1]*GHz, [10,15]*GHz, true, 10^8, 2.5*μm);
 H_AFM_racetrack = constructHamiltonian(testSystem,2)
 
-AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0, 2.6]*μm, orientations=[1,-1], 
-    a=5*μm, γ=0.5*[1,1]*GHz, ω₀=1.0*[9,8]*GHz, PBC=true, C=10.0*GHz, R₀=2.5*μm);
+AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0, 2.5]*μm, orientations=[1,-1], 
+    a=5*μm, γ=0.1*[1,1]*GHz, ω₀=0.0*[9,8]*GHz, PBC=true, C=10.0*GHz, R₀=2.5*μm);
 AFM3R_lattice = init(n_racetracks=3, racetrack_positions=[0, 2.8, 5.0]*μm, orientations=[1,-1,1], 
     a=7.5*μm, γ=0.5*[1,0.5,1]*GHz, ω₀=10*[0,2.0,2.1]*GHz, PBC=true, C=400.0*GHz, R₀=2.5*μm);
 FM1R_lattice = init(n_racetracks=1, racetrack_positions=[0]*μm, orientations=[1], 
@@ -25,43 +26,44 @@ N (# of points collected during 1 period)
 total (# harmonics)
 T (Transfer Function)
 """
-start_f = 0.0000001*GHz
-stop_f = 15.0*GHz
-
 function genFiring_neuron_DWpos(f::Float64)
-    pos(t) = f*mod(t,1/f) -1/2
+    pos(t) = trianglewave(t*2*π*f)
+    #pos(t) = cos(2*π*f*t) + 1/2*sin(2*π*3*f*t) 
+    #pos(t) = f*mod(t,1/f) -1/2
     return pos
 end
+#start_f = 0.0000001*GHz
+#stop_f = 15.0*GHz
+#function genFiring_neuron_DWpos(f::Float64)
+#    pos(t) = f*mod(t,1/f) -1/2
+#    return pos
+#end
 
-ΔT = 1/(5*GHz)
+ΔT = 2*π/(6.66*GHz); f₀ = 1/ΔT
 x = genFiring_neuron_DWpos(1/ΔT)
+ϵ = 0.001
 
-T, ω_val, mag, ϕ = transferFunc(AFM2R_lattice, 5, 1, 2, start_f, stop_f, 200)
-
-function DWPosition(x::Function, Δt::Float64, N::Int, total::Float64, T::Function)
+function DWPosition(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, 
+    x::Function, f₀::Float64, nharmonics::Int=10, NNs::Int=100, npts::Int=150)
+    T = transferFunc(system, n_lattice, race_i, race_j, 0.0,0.0, 1, NNs, false)
     # Array of harmonic #s and corresponding Magnitude 
-    f₀
-    range, aₙvals = Mag_Harmonics(x,Δt, N, total)
-    ωvals = (2π/Δt).*range
+    harmonic_indices, aₙvals = FourierSeries(x,Δt, npts, nharmonics)
+    #Plot_Spectrum(harmonic_indices,aₙvals,"anvals")
+    ωvals = (2π/Δt).*harmonic_indices .+ ϵ*GHz
     bₙvals = aₙvals.*T.(ωvals)
-    y = invFT(range,bₙvals,f₀)
-    # range in frequency.
-    #ω_val = zeros(convert(Int, total))
-    #@. ω_val = range /Δt
-    # Array of Transfer Function magnitudes for corresponding freqs.
-    #T_mag = zeros(convert(Int, total))
-    #@. T_mag = (abs∘T).(ω_val)
-    # Property: Inverse Fourier is sum of Fourier * Fourier (Magnitude)
-    #y = zeros(convert(Int, total))
-    #@. y = aₙ * T_mag
-    
+    #BodePlot(T,-nharmonics*2*π/Δt,nharmonics*2*π/Δt,200)
+    #Plot_Spectrum(harmonic_indices,bₙvals,"bnvals")
+    y = invFT(harmonic_indices,bₙvals,f₀)
     return y
 end
 
-t_range = LinRange(0, ΔT, 150)
-plot(t_range, DWPosition(x, ΔT, 50, 150.0, T))
-plot!(t_range,x)
-title!("Position of DW of racetrack 10 when oscillating racetrack 1")
-xlabel!("Time (s)")
-ylabel!("Position (m)")
-savefig("img/DW_Position.png")
+npts = 150; nharmonics = 3
+function plotIO(x::Function, f₀)
+    t_range = LinRange(0, ΔT, npts)
+    plot(t_range, DWPosition(x, ΔT, npts, nharmonics, T))
+    plot!(t_range,x)
+    title!("y(2,1)")
+    xlabel!("Time (s)")
+    ylabel!("Position (m)")
+    savefig("img/vs_lattice/DW_Position.png")
+end

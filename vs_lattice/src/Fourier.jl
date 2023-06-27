@@ -4,10 +4,12 @@ using Plots
 
 
 
-function genFiring_neuron_DWpos(f::Float64)
-    pos(t) = f*mod(t,1/f) -1/2
-    return pos
-end
+#function genFiring_neuron_DWpos(f::Float64)
+#    pos(t) = trianglewave(t*2*π*f)
+#    #pos(t) = cos(2*π*f*t) + 1/2*sin(2*π*3*f*t) 
+#    #pos(t) = f*mod(t,1/f) -1/2
+#    return pos
+#end
 
 """
     Takes time domain function and returns aₙ,
@@ -23,18 +25,19 @@ function aₙ(x::Function, t::Float64, Npts::Int, n::Int)
     f = 1/t
 
     # range of points to iterate through.
-    pts = LinRange(0.0, t, Npts)
+    pts = LinRange(0.0, t - t/Npts, Npts)
 
     # final array
+    #final = ℯ.^(-im*n*2*π*f*pts) .* x.(pts)
     final = zeros(ComplexF64, Npts)
-    @. final = ℯ^(-im*n*2pi*f*pts) * x(pts)
+    @. final = ℯ^(-im*n*2pi*f*pts) * x(pts) / Npts
 
-    return sum(final) / t
+    return (sum(final) / t)
 end
 
 
 # Magnitude for every nᵗʰ harmonics.
-function Mag_Harmonics(x::Function, t::Float64, N::Int, nharmonics::Int)
+function FourierSeries(x::Function, t::Float64, N::Int, nharmonics::Int)
     # Array of harmonic #s.
     range = [i for i = -nharmonics:1:nharmonics]
     #range = [-2,-1,0,1,2]
@@ -56,23 +59,50 @@ end
 
 function invFT(harmonic_indices::Vector{Int},aₙcoeffs::Vector{ComplexF64},f₀::Float64)
     function y(t::Float64)
-        return sum([aₙcoeffs[i]*ℯ^(im*f₀*2*π*i*t) for i in harmonic_indices])
+        yval::ComplexF64 = 0
+        for i in 1:size(harmonic_indices)[1]
+            fᵢ = f₀*harmonic_indices[i] 
+            yval += aₙcoeffs[i]*ℯ^(im*2pi*fᵢ*t)
+        end
+        return real(yval) 
+            #sum([
+            #    aₙcoeffs[i]*ℯ^(im*f₀*2*π*harmonic_indices[i]*t) for i in size(harmonic_indices)[1]
+            #    ]))
     end
     return y
 end
 
-f₀ = 1.0
-squ_harm, squ_mag = Mag_Harmonics(genFiring_neuron_DWpos(f₀), 1/f₀, 50, 50)
-#squ_harm, squ_mag = Mag_Harmonics(squarewave, 2pi, 50, 11.0)
+function Plot_TwoFs(f1::Function, f2::Function,Δt::Float64,npts::Int=500)
+    # Plot
+    tvals = LinRange(0,Δt,npts)
+    plot(tvals, f1, lw=2,c="blue")
+    plot!(tvals, f2, lw=2,c="red")
+    title!("x(t) and y(t) plotter")
+    xlabel!("t (ns)")
+    ylabel!("DW position (nm)")
+    savefig("vs_lattice/img/plotio.png")
+end
 
-function Plot_Spectrum(harmonics, magnitude)
+
+function Plot_Spectrum(harmonics, magnitude, title="")
     # Plot
     plot(harmonics, real.(magnitude), line=:stem,c="blue")
     plot!(harmonics, imag.(magnitude), line=:stem,c="red")
     title!("Magnitude of Harmonics")
     xlabel!("n (ᵗʰ harmonic)")
     ylabel!("Magnitude")
+    savefig("vs_lattice/img/"*title*" FourierSeries.png")
 end
 
-Plot_Spectrum(squ_harm, squ_mag)
-savefig("vs_lattice/img/Harmonic_Mag.png")
+#f₀ = 1.0
+#x = genFiring_neuron_DWpos(f₀)
+
+#nharmonics = 10; npts = 50
+#harmonics, coeffs = FourierSeries(x, 1/f₀, npts, nharmonics)
+
+#approx_x = invFT(harmonics,coeffs,f₀)
+
+#Plot_IO(x,approx_x,2*1/f₀)
+#squ_harm, squ_mag = Mag_Harmonics(squarewave, 2pi, 50, 11.0)
+#Plot_Spectrum(harmonics, coeffs)
+#Plot_IO(harmonics, coeffs)

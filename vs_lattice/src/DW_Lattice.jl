@@ -3,7 +3,7 @@ using LinearAlgebra
 using Plots
 using Measures
 using DelimitedFiles
-using FFTW
+#using FFTW
 gr()
 
 # Specific imports.
@@ -181,7 +181,7 @@ Returns transfer function
 
 Includes the creation of supercell
 """
-function transferFunc(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, startP::Float64, endP::Float64, step::Int, NNs::Int=500)
+function transferFunc(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, startP::Float64, endP::Float64, step::Int, NNs::Int=500, eval::Bool=true)
     # Configure the lattice
     new_sys = realSpaceArray(system, n_lattice)
     Gʳ = genGʳ_nok(constructHamiltonian(new_sys, NNs))
@@ -189,10 +189,12 @@ function transferFunc(system::DWLattice, n_lattice::Int, race_i::Int, race_j::In
     # local function that returns transfer function
     function T(ω::Float64)
         Gʳ_val = Gʳ(ω)
-        writedlm("Greens_Func.txt", Gʳ_val)
+        #writedlm("Greens_Func.txt", Gʳ_val)
         return Gʳ_val[2*race_i-1, 2*race_j-1] / Gʳ_val[2*race_i-1, 2*race_i-1]
     end
-
+    if(eval==false)
+        return T
+    end
     # ω and corresponding transfer function value
     ω_total = LinRange(startP, endP, step)
     mag::Vector = (abs∘T).(ω_total)
