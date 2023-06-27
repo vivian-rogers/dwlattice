@@ -1,8 +1,6 @@
 # General imports.
 using Plots
-#using Waveforms
-
-
+using Waveforms
 
 #function genFiring_neuron_DWpos(f::Float64)
 #    pos(t) = trianglewave(t*2*π*f)
@@ -72,17 +70,6 @@ function invFT(harmonic_indices::Vector{Int},aₙcoeffs::Vector{ComplexF64},f₀
     return y
 end
 
-function Plot_TwoFs(f1::Function, f2::Function,Δt::Float64,npts::Int=500)
-    # Plot
-    tvals = LinRange(0,Δt,npts)
-    plot(tvals, f1, lw=2,c="blue")
-    plot!(tvals, f2, lw=2,c="red")
-    title!("x(t) and y(t) plotter")
-    xlabel!("t (ns)")
-    ylabel!("DW position (nm)")
-    savefig("vs_lattice/img/plotio.png")
-end
-
 
 function Plot_Spectrum(harmonics, magnitude, title="")
     # Plot
@@ -105,4 +92,4 @@ end
 #Plot_IO(x,approx_x,2*1/f₀)
 #squ_harm, squ_mag = Mag_Harmonics(squarewave, 2pi, 50, 11.0)
 #Plot_Spectrum(harmonics, coeffs)
-#Plot_IO(harmonics, coeffs)
+# plotIO(harmonics, coeffs)

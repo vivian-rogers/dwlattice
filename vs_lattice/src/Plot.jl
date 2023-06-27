@@ -1,3 +1,5 @@
+include("DW_Lattice.jl")
+
 function BodePlot(T::Function, startω::Float64, finalω::Float64, step::Int)
     ω_vals = LinRange(startω,finalω,step)
     mag_vals = (abs∘T).(ω_vals)
@@ -24,15 +26,15 @@ function BodePlot(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, s
         y_foreground_color_text =c_right, y_foreground_color_border = c_right, y_foreground_color_axis = c_right)
 end
 
-function Plot_TwoFs(f1::Function, f2::Function,Δt::Float64,npts::Int=500)
+function Plot_TwoFs(f1::Function, f2::Function, Δt::Float64, npts::Int=500; title::String)
     # Plot
     tvals = LinRange(0,Δt,npts)
-    plot(tvals, f2, lw=4,c="",thickness_scaling=1.5)
+    plot(tvals, f2, lw=4,c="blue",thickness_scaling=0.6)
     plot!(tvals, f1, lw=4,c="red", alpha=0.6)
     title!("x(t) and y(t) plotter")
     xlabel!("t (ns)")
     ylabel!("DW position (nm)")
-    savefig("vs_lattice/img/plotio.png")
+    savefig("vs_lattice/img/"*title*"_y(t).png")title
 end
 
 

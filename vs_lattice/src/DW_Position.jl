@@ -1,6 +1,5 @@
 # Specific Imports.
 include("DW_Lattice.jl")
-include("PlotStuff.jl")
 include("Fourier.jl")
 
 # units
@@ -45,9 +44,12 @@ x = genFiring_neuron_DWpos(1/ΔT)
 
 function DWPosition(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, 
     x::Function, f₀::Float64, nharmonics::Int=10, NNs::Int=100, npts::Int=150)
+
+    Δt = 1/f₀
     T = transferFunc(system, n_lattice, race_i, race_j, 0.0,0.0, 1, NNs, false)
+
     # Array of harmonic #s and corresponding Magnitude 
-    harmonic_indices, aₙvals = FourierSeries(x,Δt, npts, nharmonics)
+    harmonic_indices, aₙvals = FourierSeries(x, Δt, npts, nharmonics)
     #Plot_Spectrum(harmonic_indices,aₙvals,"anvals")
     ωvals = (2π/Δt).*harmonic_indices .+ ϵ*GHz
     bₙvals = aₙvals.*T.(ωvals)
