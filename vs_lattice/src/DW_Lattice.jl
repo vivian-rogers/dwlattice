@@ -53,6 +53,17 @@ function Coupling_Hamiltonian(C::Union{ComplexF64, Float64})
     return H
 end
 
+function HO_Hamiltonian(ω₀::Float64,γ::Float64)
+    H₀ = [0 1; -ω₀^2 -2*γ]
+    #display(H₀)
+    return H₀
+end
+
+function Coupling_Hamiltonian(C::Union{ComplexF64, Float64})
+    H = [0 0; C 0]; # adds a term dₜ²x₁ = -ω₀²x₁ - 2γdₜx₁ + C*x₂
+    return H
+end
+
 function constructHamiltonian(system::DWLattice, NNs::Int)
     function H(k::Union{ComplexF64,Float64})
         H₀ = zeros(ComplexF64,2*system.n_racetracks[],2*system.n_racetracks[])
@@ -71,15 +82,19 @@ function constructHamiltonian(system::DWLattice, NNs::Int)
                     # make huge approximation here, say that Cij decays with 1/r² from calculated
                     # may need minus sign
                     Cij = system.orientations[][i][]*system.orientations[][j_index][]*system.C*(system.R₀/ΔR)^(2)
-                    Hindex = zeros(system.n_racetracks[],system.n_racetracks[]); Hindex[i,j_index] = 1
+                    α_index = zeros(system.n_racetracks[],system.n_racetracks[]);
+                    β_index = zeros(system.n_racetracks[],system.n_racetracks[]);
+                    β_index[i,j_index] = -1; α_index[i,i] = 1
                     #println("i = $(i), j = $(j), J_index = $(j_index)")
                     if(j < 1 || j > system.n_racetracks[])
                         if(system.PBC[])
-                            H₀ += Hindex⊗Coupling_Hamiltonian(Cij*exp(im*k*dR))
+                            H₀ += β_index⊗Coupling_Hamiltonian(Cij*exp(im*k*dR))
+                            H₀ += α_index⊗Coupling_Hamiltonian(Cij)
                             #println("k⋅dR/(2π) = $(k*dR/(2*π))")
                         end
                     else
-                        H₀ += Hindex⊗Coupling_Hamiltonian(Cij)
+                        H₀ += α_index⊗Coupling_Hamiltonian(Cij)
+                        H₀ += β_index⊗Coupling_Hamiltonian(Cij)
                     end
                 end
             end
@@ -89,6 +104,7 @@ function constructHamiltonian(system::DWLattice, NNs::Int)
     end
     return H
 end
+
 
 """
 Bands
