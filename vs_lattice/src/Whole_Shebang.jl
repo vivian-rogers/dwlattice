@@ -4,19 +4,33 @@ include("DW_Position.jl")
 include("Plot.jl")
 include("Unitcell.jl")
 
-function wholeAnalysis(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int, x::Function, f₀::Float64, name::String)
+function wholeAnalysis(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int, NNs::Int, x::Function, f₀::Float64, name::String)
+    # Make directory for the unit lattice if doesn't exist.
+    if(!isdir("vs_lattice/img/" * name))
+        mkdir("vs_lattice/img/" * name)
+    end
+
     # Magic Numbers
     Δt = 1/f₀
+    ω = 2*π/f₀    # angular freq.
+    step = 1
+    Npts = 100
+    ϵ = 0.001
 
     # Position y(t)
     y = DWPosition(system, Ncells, race_i, race_j, x, f₀)
+    # Transfer Function T
+    T = transferFunc(system, Ncells, race_i, race_j, 0.0, 0.0, step, NNs=NNs, eval=false)
 
     # get the band structure and DOS of the periodic structure
+    getBands(system, NNs, true, title=name)
 
     # now get the Bode Plot regarding the transfer function of one site on another
+    BodePlot(T, 0.0+ϵ, 25*GHz, Npts, title=name)
 
     # now convolve the impulse response with the input DW pos x(t) to get y(t)
     Plot_TwoFs(x, y, Δt, title=name)
 end
 
-wholeAnalysis(FM1R_lattice, 2, 2, 1, genFiring_neuron_DWpos(f₀), 1.0, "Triangle")
+wholeAnalysis(AFM2R_lattice, 10, 5, 4, 200, genFiring_neuron_DWpos(f₀), 1.0, "AFM2R_Triangle")
+wholeAnalysis(FM1R_lattice, 3, 2, 1, 200, genFiring_neuron_DWpos(f₀), 1.0, "FM1R_Triangle")

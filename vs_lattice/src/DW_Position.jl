@@ -46,7 +46,7 @@ function DWPosition(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int,
     x::Function, f₀::Float64, nharmonics::Int=10, NNs::Int=100, npts::Int=150)
 
     Δt = 1/f₀
-    T = transferFunc(system, n_lattice, race_i, race_j, 0.0,0.0, 1, NNs, false)
+    T = transferFunc(system, n_lattice, race_i, race_j, 0.0,0.0, 1, NNs=NNs, eval=false)
 
     # Array of harmonic #s and corresponding Magnitude 
     harmonic_indices, aₙvals = FourierSeries(x, Δt, npts, nharmonics)

@@ -1,6 +1,59 @@
+using StatsBase
 include("DW_Lattice.jl")
 
-function BodePlot(T::Function, startω::Float64, finalω::Float64, step::Int)
+"""
+Bands
+"""
+H_AFM_racetrack = constructHamiltonian(testSystem,2)
+
+function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=false, nE::Int = 200, DOS=true)
+    a = system.a
+    kvals = LinRange(-π/a,π/a,nk)
+    ys = []
+    xs = []
+    maxE = maximum(imag.(eigvals(H(π/a)) ∪ eigvals(H(0.0))))
+    if(Broadening)
+        # get some reasonable maximum for the energies
+        Evals = LinRange(0,maxE*1.1,nE)
+        n = 2*system.n_racetracks[]
+        bands = zeros(nk,nE)
+        plottingBands = zeros(nk,nE)
+        @Threads.threads for ik in eachindex(kvals)
+            k = kvals[ik]
+            Hatk = H(k)
+            DOS_k(E) = (-1/π)imag.(tr(inv(E*I(n) - im*Hatk)))
+            DOS_k_E = DOS_k.(Evals)
+            bands[ik,:] = DOS_k_E
+        end
+        #bands = (1/maximum(bands))*bands
+        #fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,maximum(bands)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
+        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
+    end
+    #@Threads.threads for k in kvals
+    #    Es = imag(eigvals(H(k)))
+    #    append!(ys,Es/GHz)
+    #    append!(xs,k*ones(size(Es)))
+    #end
+    #fig = scatter!(xs*(a/π),ys, legend=false,ylims=(-0.001,maxE*1.1), xlims=(-1,1), c="white", markersize=2.0, markerstrokewidth=0)
+    if(DOS)
+        DOS_tot = [sum(bands[:,iE]) for iE = 1:nE]/nk; DOS_tot = DOS_tot
+        fDOS = plot(DOS_tot,Evals,legend=false,xlabel="DOS(ω)", ylabel="Frequency (GHz)",ylims=(-0.0001,maxE*1.1),xlims=(0,quantile(vec(DOS_tot),0.99)+0.1), lw=3)
+    end
+    fig2 = plot(fig,fDOS,layout=grid(1,2, widths=(5/8,3/8)), size=(800,300),margin=5mm)
+    return fig2
+end
+
+function getBands(system::DWLattice, NNs::Int, broadening::Bool=true; title::String)
+    H = constructHamiltonian(system,NNs)
+    fig = plot1DBands(H,system,200,broadening)
+    savefig("vs_lattice/img/"*title*"/_bands.png")
+end
+
+"""
+Bode Plot
+"""
+
+function BodePlot(T::Function, startω::Float64, finalω::Float64, step::Int; title::String)
     ω_vals = LinRange(startω,finalω,step)
     mag_vals = (abs∘T).(ω_vals)
     ϕ_vals = (angle∘T).(ω_vals)
@@ -12,10 +65,10 @@ function BodePlot(T::Function, startω::Float64, finalω::Float64, step::Int)
     plot!(twinx(), ω_vals, ϕ_vals, color=:red, alpha=0.6, label=:"Phase", legend=false, legend_foreground_color=nothing,
         ylabel="∠H(ω) (Rad)", lw=lw, yticks=([-π,0,π],["-π","0","π"]), grid=true, gridlinewidth=1, ylim=[-3.2,3.2],
         y_foreground_color_text =c_right, y_foreground_color_border = c_right, y_foreground_color_axis = c_right)
-    savefig("./vs_lattice/img/BodePlot.png")
+    savefig("./vs_lattice/img/"*title*"/_Bode.png")
 end
 
-function BodePlot(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, startω::Float64, finalω::Float64, step::Int, NNs::Int=50)
+function BodePlot(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, startω::Float64, finalω::Float64, step::Int, NNs::Int=50; title::String)
     ω_val, mag_vals, ϕ_vals = transferFunc(system, n_lattice, race_i, race_j, startω, finalω, step); lw=4
     c_left=:black; c_right=:black
     plot(ω_val, mag_vals, color=:blue, xlabel="ω (GHz)", label="Magnitude", legend_foreground_color=nothing,
@@ -26,6 +79,10 @@ function BodePlot(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, s
         y_foreground_color_text =c_right, y_foreground_color_border = c_right, y_foreground_color_axis = c_right)
 end
 
+"""
+Position y(t)
+"""
+
 function Plot_TwoFs(f1::Function, f2::Function, Δt::Float64, npts::Int=500; title::String)
     # Plot
     tvals = LinRange(0,Δt,npts)
@@ -34,7 +91,7 @@ function Plot_TwoFs(f1::Function, f2::Function, Δt::Float64, npts::Int=500; tit
     title!("x(t) and y(t) plotter")
     xlabel!("t (ns)")
     ylabel!("DW position (nm)")
-    savefig("vs_lattice/img/"*title*"_y(t).png")title
+    savefig("vs_lattice/img/"*title*"/_y(t).png")
 end
 
 

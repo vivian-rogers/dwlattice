@@ -2,8 +2,6 @@
 using LinearAlgebra
 using Plots
 using Measures
-using DelimitedFiles
-#using FFTW
 gr()
 
 # Specific imports.
@@ -105,54 +103,6 @@ function constructHamiltonian(system::DWLattice, NNs::Int)
     return H
 end
 
-
-"""
-Bands
-"""
-H_AFM_racetrack = constructHamiltonian(testSystem,2)
-
-function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=false, nE::Int = 200, DOS=true)
-    a = system.a
-    kvals = LinRange(-π/a,π/a,nk)
-    ys = []
-    xs = []
-    maxE = maximum(imag.(eigvals(H(π/a)) ∪ eigvals(H(0.0))))
-    if(Broadening)
-        # get some reasonable maximum for the energies
-        Evals = LinRange(0,maxE*1.1,nE)
-        n = 2*system.n_racetracks[]
-        bands = zeros(nk,nE)
-        plottingBands = zeros(nk,nE)
-        @Threads.threads for ik in eachindex(kvals)
-            k = kvals[ik]
-            Hatk = H(k)
-            DOS_k(E) = (-1/π)imag.(tr(inv(E*I(n) - im*Hatk)))
-            DOS_k_E = DOS_k.(Evals)
-            bands[ik,:] = DOS_k_E
-        end
-        bands = (1/maximum(bands))*bands
-        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,maximum(bands)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
-    end
-    @Threads.threads for k in kvals
-        Es = imag(eigvals(H(k)))
-        append!(ys,Es/GHz)
-        append!(xs,k*ones(size(Es)))
-    end
-    fig = scatter!(xs*(a/π),ys, legend=false,ylims=(-0.001,maxE*1.1), xlims=(-1,1), c="white", markersize=2.0, markerstrokewidth=0)
-    if(DOS)
-        DOS_tot = [sum(bands[:,iE]) for iE = 1:nE]; DOS_tot = (1/maximum(DOS_tot))*DOS_tot
-        fDOS = plot(DOS_tot,Evals,legend=false,xlabel="DOS(ω)", ylabel="Frequency (GHz)",ylims=(-0.0001,maxE*1.1),xlims=(0,1))
-    end
-    fig2 = plot(fig,fDOS,layout=grid(1,2, widths=(5/8,3/8)), size=(800,300),margin=5mm)
-    return fig2
-end
-
-function getBands(system::DWLattice,NNs::Int,broadening::Bool=false)
-    H = constructHamiltonian(system,NNs)
-    fig = plot1DBands(H,system,200,broadening)
-    #display(fig)
-end
-
 """
 Making supercell.
 Modify: n_racetracks, racetrack_positions, orientation, γ, ωₒ
@@ -197,9 +147,9 @@ Returns transfer function
 
 Includes the creation of supercell
 """
-function transferFunc(system::DWLattice, n_lattice::Int, race_i::Int, race_j::Int, startP::Float64, endP::Float64, step::Int, NNs::Int=500, eval::Bool=true)
+function transferFunc(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int, startP::Float64, endP::Float64, step::Int; NNs::Int=500, eval::Bool=true)
     # Configure the lattice
-    new_sys = realSpaceArray(system, n_lattice)
+    new_sys = realSpaceArray(system, Ncells)
     Gʳ = genGʳ_nok(constructHamiltonian(new_sys, NNs))
 
     # local function that returns transfer function
