@@ -7,7 +7,7 @@ include("Unitcell.jl")
 function wholeAnalysis(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int, NNs::Int, x::Function, f₀::Float64, name::String)
     # Make directory for the unit lattice if doesn't exist.
     if(!isdir("vs_lattice/img/" * name))
-        mkdir("vs_lattice/img/" * name)
+        mkpath("vs_lattice/img/" * name)
     end
 
     # Magic Numbers
