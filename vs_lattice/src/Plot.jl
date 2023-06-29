@@ -91,7 +91,7 @@ function Plot_TwoFs(f1::Function, f2::Function, Δt::Float64, npts::Int=500; tit
     f1vals = f1.(tvals)
     f1vals .-= sum(f1vals)/size(f1vals)[1];
     plot(tvals, f1vals, lw=4,c="darkorchid", alpha=0.6, thickness_scaling=1.5,grid=false,dpi=300,legend=:topright,label="xᵢ(t)")
-    plot!(tvals, f2vals, lw=4,c="green", legend_foreground_color=nothing,label="xⱼ(t)",
+    plot!(tvals, f2vals, lw=2,c="green", legend_foreground_color=nothing,label="xⱼ(t)",
         xlim=(0.0,Δt),ylim=(-1.1,1.1), yticks=([-1,-depin,depin,1],["-L/2","-xₚ","xₚ","L/2"]))
     plot!([0,Δt],[depin,depin],lw=0.5,ls=:dash,c="black",label=nothing)
     plot!([0,Δt],[-depin,-depin],lw=0.5,ls=:dash,c="black",label=nothing)

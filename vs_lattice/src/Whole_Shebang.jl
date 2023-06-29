@@ -32,6 +32,8 @@ function wholeAnalysis(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int,
     Plot_TwoFs(x, y, Δt, title=name)
 end
 
-f₀ = 1*GHz
+f₀ = 18*GHz/(3*2*π)
 wholeAnalysis(AFM2R_lattice, 10, 10, 7, 200, genFiring_neuron_DWpos(f₀), f₀, "AFM2R_Triangle")
-wholeAnalysis(FM1R_lattice, 12, 8, 7, 200, genFiring_neuron_DWpos(f₀), f₀, "FM1R_Triangle")
+wholeAnalysis(FM1R_lattice, 12, 8, 7, 200, genFiring_neuron_DWpos(f₀), f₀, "FM1R_Triangle_7")
+wholeAnalysis(FM1R_lattice, 12, 8, 6, 200, genFiring_neuron_DWpos(f₀), f₀, "FM1R_Triangle_6")
+wholeAnalysis(FM1R_lattice, 12, 8, 5, 200, genFiring_neuron_DWpos(f₀), f₀, "FM1R_Triangle_5")

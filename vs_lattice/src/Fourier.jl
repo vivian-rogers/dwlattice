@@ -62,7 +62,7 @@ function invFT(harmonic_indices::Vector{Int},aₙcoeffs::Vector{ComplexF64},f₀
             fᵢ = f₀*harmonic_indices[i] 
             yval += aₙcoeffs[i]*ℯ^(im*2pi*fᵢ*t)
         end
-        return real(yval) 
+        return real(yval)/(2*π) 
             #sum([
             #    aₙcoeffs[i]*ℯ^(im*f₀*2*π*harmonic_indices[i]*t) for i in size(harmonic_indices)[1]
             #    ]))

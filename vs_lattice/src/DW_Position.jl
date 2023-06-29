@@ -27,7 +27,8 @@ T (Transfer Function)
 """
 function genFiring_neuron_DWpos(f::Float64)
     pos(t) = trianglewave(t*2*π*f)
-    #pos(t) = cos(2*π*f*t) + 1/2*sin(2*π*3*f*t) 
+    #pos(t) = trianglewave(t*2*π*f)
+    #pos(t) = cos(2*π*f*t) 
     #pos(t) = f*mod(t,1/f) -1/2
     return pos
 end
