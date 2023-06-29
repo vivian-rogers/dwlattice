@@ -26,11 +26,12 @@ function wholeAnalysis(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int,
     getBands(system, NNs, true, title=name)
 
     # now get the Bode Plot regarding the transfer function of one site on another
-    BodePlot(T, 0.0+ϵ, 25*GHz, Npts, title=name)
+    BodePlot(T, ϵ*GHz, 25*GHz, Npts, title=name)
 
     # now convolve the impulse response with the input DW pos x(t) to get y(t)
     Plot_TwoFs(x, y, Δt, title=name)
 end
 
-wholeAnalysis(AFM2R_lattice, 10, 5, 4, 200, genFiring_neuron_DWpos(f₀), 1.0, "AFM2R_Triangle")
-wholeAnalysis(FM1R_lattice, 3, 2, 1, 200, genFiring_neuron_DWpos(f₀), 1.0, "FM1R_Triangle")
+f₀ = 1*GHz
+wholeAnalysis(AFM2R_lattice, 10, 10, 7, 200, genFiring_neuron_DWpos(f₀), f₀, "AFM2R_Triangle")
+wholeAnalysis(FM1R_lattice, 12, 8, 7, 200, genFiring_neuron_DWpos(f₀), f₀, "FM1R_Triangle")

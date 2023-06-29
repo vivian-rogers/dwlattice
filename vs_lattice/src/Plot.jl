@@ -7,7 +7,7 @@ Bands
 H_AFM_racetrack = constructHamiltonian(testSystem,2)
 
 function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=false, nE::Int = 200, DOS=true)
-    a = system.a
+    a = system.a; nE = 400; nk = 400
     kvals = LinRange(-π/a,π/a,nk)
     ys = []
     xs = []
@@ -27,7 +27,7 @@ function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=fals
         end
         #bands = (1/maximum(bands))*bands
         #fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,maximum(bands)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
-        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
+        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="ω (GHz)",dpi=300)
     end
     #@Threads.threads for k in kvals
     #    Es = imag(eigvals(H(k)))
@@ -37,15 +37,15 @@ function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=fals
     #fig = scatter!(xs*(a/π),ys, legend=false,ylims=(-0.001,maxE*1.1), xlims=(-1,1), c="white", markersize=2.0, markerstrokewidth=0)
     if(DOS)
         DOS_tot = [sum(bands[:,iE]) for iE = 1:nE]/nk; DOS_tot = DOS_tot
-        fDOS = plot(DOS_tot,Evals,legend=false,xlabel="DOS(ω)", ylabel="Frequency (GHz)",ylims=(-0.0001,maxE*1.1),xlims=(0,quantile(vec(DOS_tot),0.99)+0.1), lw=3)
+        fDOS = plot(DOS_tot,Evals,legend=false,xlabel="DOS (a.u.)", ylabel="ω (GHz)",ylims=(-0.0001,maxE*1.1),grid=false,xlims=(0,quantile(vec(DOS_tot),0.99)+0.1), lw=3,dpi=300)
     end
-    fig2 = plot(fig,fDOS,layout=grid(1,2, widths=(5/8,3/8)), size=(800,300),margin=5mm)
+    fig2 = plot(fig,fDOS,layout=grid(1,2, widths=(5/8,3/8)), size=(800,300),margin=5mm,dpi=300)
     return fig2
 end
 
 function getBands(system::DWLattice, NNs::Int, broadening::Bool=true; title::String)
     H = constructHamiltonian(system,NNs)
-    fig = plot1DBands(H,system,200,broadening)
+    fig = plot1DBands(H,system,300,broadening,300)
     savefig("vs_lattice/img/"*title*"/_bands.png")
 end
 
@@ -85,12 +85,19 @@ Position y(t)
 
 function Plot_TwoFs(f1::Function, f2::Function, Δt::Float64, npts::Int=500; title::String)
     # Plot
+    depin = 0.075
     tvals = LinRange(0,Δt,npts)
-    plot(tvals, f2, lw=4,c="blue",thickness_scaling=0.6)
-    plot!(tvals, f1, lw=4,c="red", alpha=0.6)
-    title!("x(t) and y(t) plotter")
+    f2vals = f2.(tvals)
+    f1vals = f1.(tvals)
+    f1vals .-= sum(f1vals)/size(f1vals)[1];
+    plot(tvals, f1vals, lw=4,c="darkorchid", alpha=0.6, thickness_scaling=1.5,grid=false,dpi=300,legend=:topright,label="xᵢ(t)")
+    plot!(tvals, f2vals, lw=4,c="green", legend_foreground_color=nothing,label="xⱼ(t)",
+        xlim=(0.0,Δt),ylim=(-1.1,1.1), yticks=([-1,-depin,depin,1],["-L/2","-xₚ","xₚ","L/2"]))
+    plot!([0,Δt],[depin,depin],lw=0.5,ls=:dash,c="black",label=nothing)
+    plot!([0,Δt],[-depin,-depin],lw=0.5,ls=:dash,c="black",label=nothing)
+    #title!("x(t) and y(t) plotter")
     xlabel!("t (ns)")
-    ylabel!("DW position (nm)")
+    ylabel!("DW position")
     savefig("vs_lattice/img/"*title*"/_y(t).png")
 end
 

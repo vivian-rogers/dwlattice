@@ -155,6 +155,9 @@ function transferFunc(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int, 
     # local function that returns transfer function
     function T(ω::Float64)
         Gʳ_val = Gʳ(ω)
+        if(ω≈0)
+            return 0
+        end
         #writedlm("Greens_Func.txt", Gʳ_val)
         return Gʳ_val[2*race_i-1, 2*race_j-1] / Gʳ_val[2*race_i-1, 2*race_i-1]
     end
