@@ -128,11 +128,11 @@ function fixedCharges(p::NamedTuple)
         for iz_site = 0:(p.Nz-1)
             ivec = [ix_site,iz_site]
             material = mat_at_index(p,ivec)
-            fix_flag[index(p,ivec)] = 0; n_fixed +=0
-            #if(material == "substrate" || material == "ins" || material == "gatedielectric")
-            #    fix_flag[index(p,ivec)] = 0
-            #    n_fixed += 1
-            #end
+            #fix_flag[index(p,ivec)] = 0; n_fixed +=0
+            if(material == "substrate" || material == "ins" || material == "gatedielectric")
+                fix_flag[index(p,ivec)] = 0
+                n_fixed += 1
+            end
         end
     end
     # get a vector with true if the element is not zero
