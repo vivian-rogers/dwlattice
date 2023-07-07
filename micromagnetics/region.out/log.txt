@@ -6,42 +6,32 @@
 //  If you use mumax in any work or publication,                      //
 //  we kindly ask you to cite the references in references.bib        //
 //********************************************************************//
-//output directory: cheese_lattice.out/
-length := 500e-9
-width := 50e-9
-delta := 2*width - 10e-9
-lattice_constant := 200e-9
-N_unitcells := 8
-Nx := 128
-Ny := 512
-Nz := 1
-Lx := length
-Ly := N_unitcells * lattice_constant
-dX := length / Nx
-dY := Ly / Ny
-dZ := 1e-9 / Nz
-setGridSize(Nx, Ny, Nz)
-setCellSize(dX, dY, dZ)
-Msat = 600e3
-Aex = 10e-12
-anisU = vector(0, 0, 1)
-Ku1 = 0.59e6
-alpha = 0.02
-Xi = 0.2
-pinning := false
-two_racetrack := rect(length, delta+width)
-hole := rect(length, delta-width)
-cheese := two_racetrack.sub(hole)
-setgeom(cheese.repeat(0, lattice_constant, 0).transl(0, (delta+width)/2, 0))
-m = twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1)
-autosave(m, 100e-12)
-temp.set(300)
-j = vector(0, 0, 0)
-pol = 1
-run(.5e-9)
+//output directory: region.out/
+N := 128
+setgridsize(N, N, 1)
+c := 4e-9
+setcellsize(c, c, c)
+setgeom(circle(N * c))
+defregion(1, xrange(0, inf))
+defregion(2, xrange(-inf, 0))
+save(regions)
+Ku1.setregion(1, .1e6)
+anisU.setRegion(1, vector(1, 0, 0))
+Ku1.setregion(2, .2e6)
+anisU.setRegion(2, vector(0, 1, 0))
+save(Ku1)
+save(anisU)
+Msat = 800e3
+save(Msat)
+Aex = 12e-13
+alpha = 1
+m.setRegion(1, uniform(1, 1, 0))
+m.setRegion(2, uniform(-1, 1, 0))
+saveas(m, "m_inital")
+run(.1e-9)
+saveas(m, "m_final")
 //********************************************************************//
 //Please cite the following references, relevant for your simulation. //
 //See bibtex file in output folder for justification.                 //
 //********************************************************************//
-//   * Leliaert et al., AIP Adv. 7, 125010 (2017).
 //   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
