@@ -7,12 +7,14 @@
 //  we kindly ask you to cite the references in references.bib        //
 //********************************************************************//
 //output directory: initMag_exp.out/
-length := 500e-9
+T_final := 10e-9
+fmax := 2e9
+length := 150e-9
 width := 25e-9
 delta := 100e-9
 lattice_constant := 200e-9
 N_unitcells := 8
-Nx := 128
+Nx := 64
 Ny := 512
 Nz := 1
 Lx := length
@@ -22,10 +24,11 @@ dY := Ly / Ny
 dZ := 1e-9 / Nz
 setGridSize(Nx, Ny, Nz)
 setCellSize(dX, dY, dZ)
-Msat = 600e3
+Bz := 0.1
+Msat = 1250e3
 Aex = 10e-12
 anisU = vector(0, 0, 1)
-Ku1 = 0.59e6
+Ku1 = 1.5e6
 alpha = 0.02
 Xi = 0.2
 pinning := false
@@ -37,15 +40,17 @@ twoR := singleR.add(singleR.transl(0, delta, 0))
 setgeom(twoR)
 defRegion(1, singleR)
 defRegion(2, singleR.transl(0, delta, 0))
+defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
 save(regions)
+B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T_final/2))))
 m.setRegion(1, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
 m.setRegion(2, twoDomain(0, 0, -1, 1, 1, 0, 0, 0, 1))
 relax()
-autosave(m, 25e-12)
-temp.set(50)
+autosave(m, 100e-12)
+temp.set(20)
 j = vector(0, 0, 0)
 pol = 1
-run(2e-9)
+run(T_final)
 //********************************************************************//
 //Please cite the following references, relevant for your simulation. //
 //See bibtex file in output folder for justification.                 //
