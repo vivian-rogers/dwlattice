@@ -1,0 +1,62 @@
+//mumax 3.10 [linux_amd64 go1.17.3(gc) CUDA-11.5]
+//GPU info: NVIDIA GeForce RTX 3060 Laptop GPU(6143MB), CUDA Driver 12.0, cc=8.6, using cc=75 PTX
+//(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium
+//This is free software without any warranty. See license.txt
+//********************************************************************//
+//  If you use mumax in any work or publication,                      //
+//  we kindly ask you to cite the references in references.bib        //
+//********************************************************************//
+//output directory: DW_Lattice.out/
+T_final := 20e-9
+fmax := 0.5e9
+length := 200e-9
+width := 25e-9
+delta := 100e-9
+lattice_constant := 200e-9
+N_unitcells := 8
+Nx := 64
+Ny := 512
+Nz := 1
+Lx := length
+Ly := N_unitcells * lattice_constant
+dX := length / Nx
+dY := Ly / Ny
+dZ := 1e-9 / Nz
+setGridSize(Nx, Ny, Nz)
+setCellSize(dX, dY, dZ)
+Bz := 0.05
+Msat = 1250e3
+Aex = 10e-12
+anisU = vector(0, 0, 1)
+Ku1 = 1.5e6
+alpha = 0.1
+Xi = 0.2
+pinning := false
+two_racetrack := rect(length, delta+width)
+racetrack := rect(length, width)
+gap := delta - width
+singleR := racetrack.repeat(0, lattice_constant, 0).transl(0, width/2, 0)
+twoR := singleR.add(singleR.transl(0, delta, 0))
+setgeom(twoR)
+defRegion(1, singleR)
+defRegion(2, singleR.transl(0, delta, 0))
+defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
+save(regions)
+B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T_final/2))))
+m.setRegion(1, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
+m.setRegion(2, twoDomain(0, 0, -1, 1, 1, 0, 0, 0, 1))
+m.setRegion(3, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
+relax()
+autosave(m, 100e-12)
+tableadd(e_total)
+tableautosave(10e-12)
+temp.set(1)
+j = vector(0, 0, 0)
+pol = 1
+run(T_final)
+//********************************************************************//
+//Please cite the following references, relevant for your simulation. //
+//See bibtex file in output folder for justification.                 //
+//********************************************************************//
+//   * Leliaert et al., AIP Adv. 7, 125010 (2017).
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
