@@ -1,6 +1,6 @@
 
 T_final := 20e-9
-fmax := 0.5e9
+fmax := 2.5e9
 
 // Racetrack crystal settings:
 length := 200e-9
@@ -21,12 +21,12 @@ setGridSize(Nx, Ny, Nz)
 setCellSize(dX, dY, dZ)
 
 // Material Constants
-Bz := 0.05
+Bz := 0.1
 Msat = 1250e3
 Aex = 10e-12
 anisU = vector(0, 0, 1)
 Ku1 = 1.5e6
-alpha = 0.1
+alpha = 0
 Xi = 0.2
 pinning := false
 
@@ -56,7 +56,7 @@ relax()
 // Schedule output & save results
 autosave(m, 100e-12)
 tableadd(e_total)
-tableautosave(10e-12)
+tableautosave(100e-12)
 
 // Run for 1ns with current through the sample
 temp.set(1)

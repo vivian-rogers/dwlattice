@@ -126,4 +126,12 @@ def findDW(m):
 DW Position Parsing
 '''
 # DW Positions in .ovf
-print(findDW(fields["m000199"]))
+# print(findDW(fields["m000199"]))
+
+
+'''
+DWTSW Band Structure
+'''
+# Stack all snapshots of the magnetization on top of each other
+print(fields)
+m = np.stack([fields[key] for key in sorted(fields.keys())])
