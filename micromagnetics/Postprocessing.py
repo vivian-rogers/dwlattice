@@ -121,17 +121,143 @@ def findDW(m):
     
     return DW_array
 
+def findDW_A(m):
+    # *Global* values/ variables
+    x_total = m.shape[3]
+    y_total = m.shape[2]
+    x_mid = int(m.shape[3]/2)
 
+    DW_array = []
+    DW_pos = []
+
+    nDW = 0.0
+    flag = False
+    count = -1
+
+    for iy in range(y_total):
+        mx = m[0,0,iy,x_mid]
+        my = m[1,0,iy,x_mid]
+        mz = m[2,0,iy,x_mid]
+        empty = (mx==0) and (my==0) and (mz==0)
+
+        if empty:
+            # Just got off the racetrack.
+            if flag == True:
+                if count%2 == 0:
+                    DW_array.append(sum(DW_pos) / nDW)
+                DW_pos = []
+                nDW = 0
+                flag = False
+        else:
+            # Just entered the racetrack.
+            if flag == False:
+                flag = True
+                count += 1
+            f = Rbf(np.arange(x_total), m[2,0,iy,:]) 
+            DW_pos.append(bisect(f, 0, x_total, 15))
+            nDW += 1
+    
+    return DW_array
+
+def findDW_B(m):
+    # *Global* values/ variables
+    x_total = m.shape[3]
+    y_total = m.shape[2]
+    x_mid = int(m.shape[3]/2)
+
+    DW_array = []
+    DW_pos = []
+
+    nDW = 0.0
+    flag = False
+    count = -1
+
+    for iy in range(y_total):
+        mx = m[0,0,iy,x_mid]
+        my = m[1,0,iy,x_mid]
+        mz = m[2,0,iy,x_mid]
+        empty = (mx==0) and (my==0) and (mz==0)
+
+        if empty:
+            # Just got off the racetrack.
+            if flag == True:
+                if count%2 != 0:
+                    DW_array.append(sum(DW_pos) / nDW)
+                DW_pos = []
+                nDW = 0
+                flag = False
+        else:
+            # Just entered the racetrack.
+            if flag == False:
+                flag = True
+                count += 1
+            f = Rbf(np.arange(x_total), m[2,0,iy,:]) 
+            DW_pos.append(bisect(f, 0, x_total, 15))
+            nDW += 1
+    
+    return DW_array
 '''
 DW Position Parsing
 '''
-# DW Positions in .ovf
-# print(findDW(fields["m000199"]))
+# Stack all snapshots of the magnetization on top of each other
+# snaps = len(fields.keys())
+# posA = np.stack([findDW_A(fields[key]) for key in iter.islice(sorted(fields.keys()), snaps-1)])
+# posB = np.stack([findDW_B(fields[key]) for key in iter.islice(sorted(fields.keys()), snaps-1)])
+
+pos = []
+posA = []
+posB = []
+
+for key in sorted(fields.keys()):
+    if key != "regions000000":
+        pos.append(findDW(fields[key]))
+        posA.append(findDW_A(fields[key]))
+        print("Processing: " + str(key))
+        posB.append(findDW_B(fields[key]))
+
+posA_fft = np.fft.fft2(posA)
+posB_fft = np.fft.fft2(posB)
+posA_fft = np.fft.fftshift(posA_fft)
+posB_fft = np.fft.fftshift(posB_fft)
+
+A = np.add(np.abs(posA_fft)**2, np.abs(posB_fft)**2)
+# A = np.abs(posA_fft)**2
+# B = np.abs(posB_fft)**2
 
 
 '''
 DWTSW Band Structure
 '''
-# Stack all snapshots of the magnetization on top of each other
-print(fields)
-m = np.stack([fields[key] for key in sorted(fields.keys())])
+from matplotlib.colors import LogNorm
+
+plt.figure(figsize=(10,6))
+
+# Show the intensity plot of the 2D FFT
+# extent = [ -(2*np.pi)/(2*dx), (2*np.pi)/(2*dx), -1/(2*dt), 1/(2*dt)] # extent of k values and frequencies
+
+# plt.imshow(np.abs(posA_fft)**2, extent=extent, aspect='auto', origin='lower', cmap="inferno")
+# plt.imshow(np.abs(posB_fft)**2, extent=extent, aspect='auto', origin='lower', cmap="inferno")
+plt.imshow(A, aspect='auto', origin='lower', cmap="inferno", norm=LogNorm())
+
+# plt.xlim([-2e8,2e8])
+# plt.ylim([0,fmax])
+plt.ylabel("$f$ (Hz)")
+plt.xlabel("$k$ (1/m)")
+
+plt.show()
+
+# Plot positions along racetracks
+by_track = np.transpose(pos)
+
+'''
+Position v. Time
+'''
+n_racetrack = range(by_track.shape[0])      # 16
+T_vals = np.linspace(0, T, int(T/dt)+1)
+
+plt.figure(figsize=(10, 6), dpi=300)
+
+for nth in n_racetrack:
+    plt.plot(T_vals, by_track[nth], label=str(nth+1)+'th')
+
+plt.legend(loc="upper left", fontsize='5')
