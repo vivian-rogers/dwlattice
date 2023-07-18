@@ -18,24 +18,28 @@ lattice_constant := 200e-9
 N_unitcells := 8
 Nx := 100
 Ny := 256
-Nz := 2
+Nz := 1
 Lx := length
 Ly := N_unitcells * lattice_constant
 dX := length / Nx
 dY := Ly / Ny
 dZ := 5e-9 / Nz
 vcma_x := 5e-9
+ξ := 10e-12
+dV := 2.5
+tD := 20e-9
 setGridSize(Nx, Ny, Nz)
 setCellSize(dX, dY, dZ)
 Bz := 0.01
 Msat = 1273e3
 Aex = 10e-12
 anisU = vector(0, 0, 1)
-Ku1 = 1.5e6
 alpha = 0.1
 Xi = 0.2
 demagAccuracy = 8
 pinning := false
+K_i := 1.5e6
+K_eff := K_i - ξ*dV/tD
 two_racetrack := rect(length, delta+width)
 racetrack := rect(length, width)
 vcma := rect(vcma_x, Ly)
@@ -47,7 +51,11 @@ setgeom(twoR_vcma)
 defRegion(1, singleR)
 defRegion(2, singleR.transl(0, delta, 0))
 defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
+defRegion(4, vcma.transl(0, 0, height/2))
 save(regions)
+Ku1.setRegion(1, K_i)
+Ku1.setRegion(2, K_i)
+Ku1.setRegion(4, K_eff)
 B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T/2))))
 m.setRegion(1, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
 m.setRegion(2, twoDomain(0, 0, -1, 1, 1, 0, 0, 0, 1))
