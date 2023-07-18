@@ -1,5 +1,7 @@
-T_final := 20e-9
-fmax := 0.5e9
+// NUMERICAL PARAMETERS
+fmax := 0.1e9     // maximum frequency (in Hz) of the sinc pulse
+run_T := 400e-9   // simulation time (longer -> better frequency resolution)
+T_step := 250e-12 // the sample time
 
 // Racetrack crystal settings:
 length := 200e-9
@@ -7,26 +9,27 @@ width := 25e-9
 delta := 100e-9
 lattice_constant := 200e-9
 N_unitcells := 8
-Nx := 64
-Ny := 512
+Nx := 100
+Ny := 256
 Nz := 1
 Lx := length
 Ly := N_unitcells * lattice_constant
 dX := length / Nx
 dY := Ly / Ny
-dZ := 1e-9 / Nz
+dZ := 3e-9 / Nz
 
 setGridSize(Nx, Ny, Nz)
 setCellSize(dX, dY, dZ)
 
 // Material Constants
-Bz := 0.05
-Msat = 1250e3
+Bz := 0.01
+Msat = 1273e3
 Aex = 10e-12
 anisU = vector(0, 0, 1)
 Ku1 = 1.5e6
-alpha = 0.1
+alpha = 0
 Xi = 0.2
+demagAccuracy = 8
 pinning := false
 
 two_racetrack := rect(length, delta+width)
@@ -45,20 +48,21 @@ defRegion(2, singleR.transl(0, delta, 0))
 defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
 save(regions)
 
-// B_ext = vector(0, 0, 0)
-B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T_final/2))))
+B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T/2))))
 
 m.setRegion(1, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
 m.setRegion(2, twoDomain(0, 0, -1, 1, 1, 0, 0, 0, 1))
 m.setRegion(3, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
-// setPBC(0, 3, 0)
+setPBC(0, 2, 0)
 relax()
 
-// Schedule output
-autosave(m, 100e-12)
+// Schedule output & save results
+autosave(m, T_step)
+tableadd(e_total)
+tableautosave(T_step)
 
 // Run for 1ns with current through the sample
 temp.set(1)
 j = vector(0, 0, 0)
 pol = 1
-run(T_final)
+run(run_T)
