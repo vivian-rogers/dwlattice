@@ -7,7 +7,7 @@ T_step := 100e-12 // the sample time
 length := 200e-9
 width := 25e-9
 height := 2.5e-9
-sur_height := height / 8
+sur_height := height / 100
 delta := 100e-9
 lattice_constant := 200e-9
 N_unitcells := 8
@@ -60,7 +60,7 @@ setgeom(twoR_vcma)
 // Define regions
 defRegion(1, singleR)
 defRegion(2, singleR.transl(0, delta, 0))
-defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
+defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0)) // For oscillation
 defRegion(4, vcma.transl(0, 0, height/2))
 defRegion(5, twoR_sur) // For interfacial anisotrophy
 save(regions)
