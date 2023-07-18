@@ -13,12 +13,13 @@ T_step := 100e-12
 length := 200e-9
 width := 25e-9
 height := 2.5e-9
+sur_height := height / 8
 delta := 100e-9
 lattice_constant := 200e-9
 N_unitcells := 8
 Nx := 100
 Ny := 256
-Nz := 1
+Nz := 2
 Lx := length
 Ly := N_unitcells * lattice_constant
 dX := length / Nx
@@ -40,21 +41,23 @@ demagAccuracy = 8
 pinning := false
 K_i := 1.5e6
 K_eff := K_i - ξ*dV/tD
-two_racetrack := rect(length, delta+width)
-racetrack := rect(length, width)
-vcma := rect(vcma_x, Ly)
+racetrack := cuboid(length, width, height)
+racetrack_sur := cuboid(length, width, sur_height)
+vcma := cuboid(vcma_x, Ly, height)
 gap := delta - width
 singleR := racetrack.repeat(0, lattice_constant, 0).transl(0, width/2, 0)
+singleR_sur := racetrack_sur.repeat(0, lattice_constant, 0).transl(0, width/2, -sur_height/2)
 twoR := singleR.add(singleR.transl(0, delta, 0))
+twoR_sur := singleR_sur.add(singleR_sur.transl(0, delta, 0))
 twoR_vcma := twoR.transl(0, 0, -height/2).add(vcma.transl(0, 0, height/2))
 setgeom(twoR_vcma)
 defRegion(1, singleR)
 defRegion(2, singleR.transl(0, delta, 0))
 defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
 defRegion(4, vcma.transl(0, 0, height/2))
+defRegion(5, twoR_sur)
 save(regions)
-Ku1.setRegion(1, K_i)
-Ku1.setRegion(2, K_i)
+Ku1.setRegion(5, K_i)
 Ku1.setRegion(4, K_eff)
 B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T/2))))
 m.setRegion(1, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
@@ -74,5 +77,5 @@ run(run_T)
 //Please cite the following references, relevant for your simulation. //
 //See bibtex file in output folder for justification.                 //
 //********************************************************************//
-//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
 //   * Leliaert et al., AIP Adv. 7, 125010 (2017).
+//   * Vansteenkiste et al., AIP Adv. 4, 107133 (2014).
