@@ -26,14 +26,35 @@ struct DWLattice
     γ::Ref{Vector{Float64}} # damping constant for each oscillator
     ω₀::Ref{Vector{Float64}} # resonant frequency of each DW
     PBC::Ref{Bool} # periodic boundary conditions? for k-dependent Hamiltonian?
-    C::Float64 # Stray-field coupling constant
-    R₀::Float64 # distance between racetracks at which C was calculated
+    C::Float64 # Stray-field coupling constant. Is Fext/(m*Hext)
+    #R₀::Float64 # distance between racetracks at which C was calculated
+    w::Float64 # width of racetrack in meters
+    Ms::Float64 # magnetic saturation value of material
+    t::Float64 # thickness of racetrack in meters
+    α::Float64 # gilbert damping
+    m::Float64 # effective mass of domain wall
 end
 
+nm=10^-9
+μ₀ = 9.274E-24 # Bohr Magneton in Joules/Tesla
+γ₀ = 1.7609E11 # electron gyromagnetic ratio in rad/(second*Tesla)
+
+"""
+Creates a new system struct 
+"""
 function init(; n_racetracks::Int, racetrack_positions::Vector{Float64}, orientations::Vector{Int},
-        a::Float64, γ::Vector{Float64}, ω₀::Vector{Float64}, PBC::Bool, C::Float64, R₀::Float64)
-    return DWLattice(n_racetracks, racetrack_positions, orientations, a, γ, ω₀, PBC, C, R₀);
+        a::Float64, ω₀::Vector{Float64}, PBC::Bool, w_RT::Float64, Ms::Float64, t::Float64, α::Float64, w_DW::Float64=40*nm)
+        NzminNy = 1;
+        γ = α*Ms*γ₀*NzminNy/(2*(1+α^2)) 
+        m = 2*(1+α^2)*μ₀*(t*w_RT)/(γ₀*Δ₀*NzminNy)
+        C = 2*μ₀*w_RT*t*Ms/m
+        return DWLattice(n_racetracks, racetrack_positions, orientations, a, γ, ω₀, PBC, C, w, Ms, α, m);
 end
+
+#function init(; n_racetracks::Int, racetrack_positions::Vector{Float64}, orientations::Vector{Int},
+#        a::Float64, γ::Vector{Float64}, ω₀::Vector{Float64}, PBC::Bool, C::Float64, R₀::Float64)
+#    return DWLattice(n_racetracks, racetrack_positions, orientations, a, γ, ω₀, PBC, C, R₀);
+#end
 
 testSystem = DWLattice(2, [0, 2.5]*μm, [1,-1], 5*μm, [0.1,0.1]*GHz, [10,15]*GHz, true, 10^8, 2.5*μm);
 
@@ -62,6 +83,12 @@ function Coupling_Hamiltonian(C::Union{ComplexF64, Float64})
     return H
 end
 
+function ∂Hz_∂x(system::DWLattice,ΔR::Float64) # taylor series in x approximation for stray fields
+    Λplus = 2*(system.w_RT-2*ΔR)/(system.t*√( system.t_RT^2 + system.w_RT^2 - 4*system.w_RT*ΔR + 4*ΔR^2 ) )
+    Λmin = 2*(system.w_RT+2*ΔR)/(system.t*√( system.t_RT^2 + system.w_RT^2 + 4*system.w_RT*ΔR + 4*ΔR^2 ) )
+    return -(system.Ms/π)*(Λmin + Λplus)
+end
+
 function constructHamiltonian(system::DWLattice, NNs::Int)
     function H(k::Union{ComplexF64,Float64})
         H₀ = zeros(ComplexF64,2*system.n_racetracks[],2*system.n_racetracks[])
@@ -79,7 +106,7 @@ function constructHamiltonian(system::DWLattice, NNs::Int)
                     ΔR = abs(system.racetrack_positions[][i] - (dR + system.racetrack_positions[][j_index])) # distance of nth racetrack
                     # make huge approximation here, say that Cij decays with 1/r² from calculated
                     # may need minus sign
-                    Cij = system.orientations[][i][]*system.orientations[][j_index][]*system.C*(system.R₀/ΔR)^(2)
+                    Cij = system.orientations[][i][]*system.orientations[][j_index][]*system.C*∂Hz_∂x(system,ΔR)
                     α_index = zeros(system.n_racetracks[],system.n_racetracks[]);
                     β_index = zeros(system.n_racetracks[],system.n_racetracks[]);
                     β_index[i,j_index] = -1; α_index[i,i] = 1
