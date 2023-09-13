@@ -1,1 +1,0 @@
-# Micromagnetics Simulation
