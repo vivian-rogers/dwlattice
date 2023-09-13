@@ -1,0 +1,89 @@
+// NUMERICAL PARAMETERS
+fmax := 0.1e9     // maximum frequency (in Hz) of the sinc pulse
+run_T := 2.5e-9   // simulation time (longer -> better frequency resolution)
+T_step := 100e-12 // the sample time
+
+// Racetrack crystal settings:
+length := 200e-9
+width := 25e-9
+height := 2.5e-9
+sur_height := height / 100
+delta := 100e-9
+lattice_constant := 200e-9
+N_unitcells := 8
+Nx := 100
+Ny := 256
+Nz := 2
+Lx := length
+Ly := N_unitcells * lattice_constant
+dX := length / Nx
+dY := Ly / Ny
+dZ := 5e-9 / Nz
+
+// VCMA settings:
+vcma_x := 5e-9
+ξ := 10e-12 // VCMA Coefficient
+dV := 2.5   // Voltage over VCMA terminals
+tD := 20e-9 // Dielectric thickness
+
+setGridSize(Nx, Ny, Nz)
+setCellSize(dX, dY, dZ)
+
+// Material Constants
+Bz := 0.01
+Msat = 1273e3
+Aex = 10e-12
+anisU = vector(0, 0, 1)
+alpha = 0.1
+Xi = 0.2
+demagAccuracy = 8
+pinning := false
+
+// Anisotropy constants
+K_i := 1.5e6
+K_eff := K_i - ξ*dV/tD
+
+racetrack := cuboid(length, width, height)
+racetrack_sur := cuboid(length, width, sur_height)
+vcma := cuboid(vcma_x, Ly, height)
+
+gap := delta - width
+
+singleR := racetrack.repeat(0, lattice_constant, 0).transl(0, width/2, 0)
+singleR_sur := racetrack_sur.repeat(0, lattice_constant, 0).transl(0, width/2, -sur_height/2)
+twoR := singleR.add(singleR.transl(0, delta, 0))
+twoR_sur := singleR_sur.add(singleR_sur.transl(0, delta, 0))
+twoR_vcma := twoR.transl(0, 0, -height/2).add(vcma.transl(0, 0, height/2))
+
+setgeom(twoR_vcma)
+
+// Define regions
+defRegion(1, singleR)
+defRegion(2, singleR.transl(0, delta, 0))
+defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0)) // For oscillation
+defRegion(4, vcma.transl(0, 0, height/2))
+defRegion(5, twoR_sur) // For interfacial anisotrophy
+save(regions)
+
+// Anisotropy regions
+Ku1.setRegion(5, K_i)
+Ku1.setRegion(4, K_eff)
+
+B_ext.setregion(3, vector(0, 0, Bz*sinc(2*pi*fmax*(t-T/2))))
+
+m.setRegion(1, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
+m.setRegion(2, twoDomain(0, 0, -1, 1, 1, 0, 0, 0, 1))
+m.setRegion(3, twoDomain(0, 0, 1, 1, 1, 0, 0, 0, -1))
+setPBC(0, 2, 0)
+relax()
+
+// Schedule output & save results
+autosave(m, T_step)
+tableadd(e_total)
+tableautosave(T_step)
+
+// Run for 1ns with current through the sample
+temp.set(1)
+j = vector(0, 0, 0)
+pol = 1
+run(run_T)
