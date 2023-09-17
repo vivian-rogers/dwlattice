@@ -18,7 +18,7 @@ DW Lattice struct w/ parameters
 Made racetrack_positions and PBC mutable.
 racetrack_positions is 2D vector, so that we can duplicate set of racetracks
 """
-struct DWLattice
+mutable struct DWLattice
     n_racetracks::Ref{Int} # number of racetracks in the unit cell
     racetrack_positions::Ref{Vector{Float64}}
     orientations::Ref{Vector{Int}} # relative orientation of each domain wall;
