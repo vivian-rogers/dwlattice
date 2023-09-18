@@ -4,7 +4,7 @@ include("DW_Lattice.jl")
 """
 Bands
 """
-H_AFM_racetrack = constructHamiltonian(testSystem,2)
+#H_AFM_racetrack = constructHamiltonian(testSystem,2)
 
 function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=false, nE::Int = 200, DOS=true)
     a = system.a; nE = 400; nk = 400

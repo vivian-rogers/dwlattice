@@ -2,16 +2,18 @@
 include("DW_Lattice.jl")
 
 # units
-μm = 10^-6; GHz = 10^9; nm = 10^-9; Ms_CoFeB = 1440*10^3; #A/m
+μm = 10^-6; GHz = 10^9; nm = 10^-9; Ms_CoFeB = 1440.0*10^3; #A/m
 
-testSystem = DWLattice(2, [0, 2.5]*μm, [1,-1], 5*μm, [0.1,0.1]*GHz, [10,15]*GHz, true, 10^8, 2.5*μm);
-H_AFM_racetrack = constructHamiltonian(testSystem,2)
+#=
+#testSystem = DWLattice(2, [0, 2.5]*μm, [1,-1], 5*μm, [0.1,0.1]*GHz, [10,15]*GHz, true, 10^8, 2.5*μm);
+#H_AFM_racetrack = constructHamiltonian(testSystem,2)
 
 #AFM2R_lattice = init(; n_racetracks::Int, racetrack_positions::Vector{Float64}, orientations::Vector{Int},
 #        a::Float64, ω₀::Vector{Float64}, PBC::Bool, w_RT::Float64, Ms::Float64, t::Float64, \alpha  w_DW::Float64=40*nm)
+=#
 
-AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0,2.5]*μm, orientations=[1,-1], 
-    a=5*μm, ω₀=0.0*[0,0]*GHz, PBC=true, w_RT=100*nm, C=10.0*GHz, Ms=Ms_CoFeB, t=1*nm, α=0.1, w_DW=20*nm);
+AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0,0.2]*μm, orientations=[1,-1], 
+    a=0.4*μm, ω₀=0.0*[0.0,0.0]*GHz, PBC=true, w_RT=100*nm, Ms=Ms_CoFeB, t=1*nm, α=0.1, w_DW=2*nm);
 
 #=
 AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0,2.5]*μm, orientations=[1,-1], 

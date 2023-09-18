@@ -26,7 +26,7 @@ function wholeAnalysis(system::DWLattice, Ncells::Int, race_i::Int, race_j::Int,
     getBands(system, NNs, true, title=name)
 
     # now get the Bode Plot regarding the transfer function of one site on another
-    BodePlot(T, ϵ*GHz, 25*GHz, Npts, title=name)
+    BodePlot(T, ϵ*GHz, 25.0*GHz, Npts, title=name)
 
     # now convolve the impulse response with the input DW pos x(t) to get y(t)
     Plot_TwoFs(x, y, Δt, title=name)
