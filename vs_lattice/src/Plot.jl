@@ -27,7 +27,7 @@ function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=fals
         end
         #bands = (1/maximum(bands))*bands
         #fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,maximum(bands)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
-        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="ω (10⁹ rad/ns)",dpi=300)
+        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="ω (10⁹ rad/s)",dpi=300)
     end
     #@Threads.threads for k in kvals
     #    Es = imag(eigvals(H(k)))
