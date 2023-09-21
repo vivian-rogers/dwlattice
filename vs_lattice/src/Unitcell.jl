@@ -12,8 +12,8 @@ include("DW_Lattice.jl")
 #        a::Float64, ω₀::Vector{Float64}, PBC::Bool, w_RT::Float64, Ms::Float64, t::Float64, \alpha  w_DW::Float64=40*nm)
 =#
 
-AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0,0.2]*μm, orientations=[1,-1], 
-    a=0.4*μm, ω₀=0.0*[0.0,0.0]*GHz, PBC=true, w_RT=100*nm, Ms=Ms_CoFeB, t=1*nm, α=0.1, w_DW=2*nm);
+AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0,10]*nm, orientations=[1,-1], 
+    a=20*nm, ω₀=0.0*[5.0,5.0]*GHz, PBC=true, w_RT=10*nm, Ms=Ms_CoFeB, t=1*nm, α=0.1, w_DW=2*nm);
 
 #=
 AFM2R_lattice = init(n_racetracks=2, racetrack_positions=[0,2.5]*μm, orientations=[1,-1], 

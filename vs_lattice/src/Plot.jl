@@ -27,7 +27,7 @@ function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=fals
         end
         #bands = (1/maximum(bands))*bands
         #fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,maximum(bands)), xlabel="k (π/a)", ylabel="Frequency (GHz)")
-        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="ω (GHz)",dpi=300)
+        fig = heatmap(kvals*(a/π), Evals, bands', clims=(0,quantile(vec(bands),0.995)), xlabel="k (π/a)", ylabel="ω (10⁹ rad/ns)",dpi=300)
     end
     #@Threads.threads for k in kvals
     #    Es = imag(eigvals(H(k)))
@@ -37,7 +37,7 @@ function plot1DBands(H::Function,system::DWLattice,nk::Int,Broadening::Bool=fals
     #fig = scatter!(xs*(a/π),ys, legend=false,ylims=(-0.001,maxE*1.1), xlims=(-1,1), c="white", markersize=2.0, markerstrokewidth=0)
     if(DOS)
         DOS_tot = [sum(bands[:,iE]) for iE = 1:nE]/nk; DOS_tot = DOS_tot
-        fDOS = plot(DOS_tot,Evals,legend=false,xlabel="DOS (a.u.)", ylabel="ω (GHz)",ylims=(-0.0001,maxE*1.1),grid=false,xlims=(0,quantile(vec(DOS_tot),0.99)+0.1), lw=3,dpi=300)
+        fDOS = plot(DOS_tot,Evals,legend=false,xlabel="DOS (a.u.)", ylabel="ω (10⁹ rad/s)",ylims=(-0.0001,maxE*1.1),grid=false,xlims=(0,quantile(vec(DOS_tot),0.99)+0.1), lw=3,dpi=300)
     end
     fig2 = plot(fig,fDOS,layout=grid(1,2, widths=(5/8,3/8)), size=(800,300),margin=5mm,dpi=300)
     return fig2
@@ -45,7 +45,7 @@ end
 
 function getBands(system::DWLattice, NNs::Int, broadening::Bool=true; title::String)
     H = constructHamiltonian(system,NNs)
-    fig = plot1DBands(H,system,300,broadening,300)
+    fig = plot1DBands(H,system,500,broadening,300)
     savefig("vs_lattice/img/"*title*"/_bands.png")
 end
 
