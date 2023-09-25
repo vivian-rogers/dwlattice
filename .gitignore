@@ -1,3 +1,2 @@
-vs_lattice/img/AFM2R_Triangle/_bands.png
-vs_lattice/img/AFM2R_Triangle/_y(t).png
-vs_lattice/img/AFM2R_Triangle/_Bode.png
+# ignore output files
+/micromagnetics/outputs
