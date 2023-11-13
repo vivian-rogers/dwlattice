@@ -1,3 +1,7 @@
-vs_lattice/img/AFM2R_Triangle/_bands.png
-vs_lattice/img/AFM2R_Triangle/_y(t).png
-vs_lattice/img/AFM2R_Triangle/_Bode.png
+# VSCode dependencies
+.vscode
+
+# Jupyter checkpoints
+jupyter_lattice/.ipynb_checkpoints
+micromagnetics/src/.ipynb_checkpoints
+vs_lattice/.ipynb_checkpoints
