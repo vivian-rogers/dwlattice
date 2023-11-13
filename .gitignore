@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # VSCode dependencies
 .vscode
 
@@ -5,3 +6,7 @@
 jupyter_lattice/.ipynb_checkpoints
 micromagnetics/src/.ipynb_checkpoints
 vs_lattice/.ipynb_checkpoints
+=======
+# ignore output files
+/micromagnetics/outputs
+>>>>>>> a1023feff5e9e39c0dfae05cd4b8479a96cb8bc5
