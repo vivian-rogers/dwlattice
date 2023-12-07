@@ -39,8 +39,9 @@ nm=10^-9
 μ₀ = 9.274E-24 # Bohr Magneton in Joules/Tesla
 γ₀ = 1.7609E11 # electron gyromagnetic ratio in rad/(second*Tesla)
 debug = 1E0;
-#Ks = 1E6 # effective OOP anisotropy CoFeB in J / cm^3
-Ks = 4.3E5 # effective OOP anisotropy Cobalt in J / cm^3
+Ks = 1.5E6 # effective OOP anisotropy CoFeB in J / cm^3
+Aex = 
+#Ks = 4.3E5 # effective OOP anisotropy Cobalt in J / cm^3
 fudge=1E18
 """
 Creates a new system struct 
@@ -52,7 +53,6 @@ function init(; n_racetracks::Int, racetrack_positions::Vector{Float64}, orienta
         #γ = α*Ms*γ₀*NzminNy/(2*(1+α^2))*debug
         #w_DW = √()
         γ = 2*α*γ₀*Ks/((1+α^2)*Ms)
-        
         # thermal DW motion 1D model paper
         #m = 2*(1+α^2)*μ₀*(t*w_RT)/(γ₀*w_DW*NzminNy)
         m = (1+α^2)*Ms^2*(t*w_RT)/(γ₀^2*w_DW*Ks)
