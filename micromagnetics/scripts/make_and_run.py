@@ -1,24 +1,35 @@
 import argparse
 import os
 import subprocess
-
+import sys
+import numpy as np
 
 def main():
     
     # get the arguments in order:
+    # need to 
+    # module load intel
+    # module load python3
     parser = argparse.ArgumentParser(description='Modify mumax3 input file parameters.')
-    parser.add_argument('--material', type=str, default="cofeb", help='Value for Exchange? (default: cofeb)')
     
+    # janky supergarbage to set default material parameters
+    material = sys.argv[1]
+    parts = material.split('=')
+    # The part after the '=' is the second element of the resulting list
+    material = parts[1] if len(parts) > 1 else None
+
     # okay this is a bit silly. Let's do a first pass and get the material params if the material is defined
-    args = parser.parse_args()
-    
-    def switch(material):
-        if material == "YIG":
-            # citations 10.1088/0022-3727/48/1/015001
-            mat_params = {"alpha":6.15E-5,  "Msat":141E3,       "Aex":3.7E-12,  "Ku1":0}
-        else: # we just assume it's cofeb
-            mat_params = {"alpha":0.015,    "Msat": 1273E3,    "Aex": 10E-12,   "Ku1":1.5e6}
-    
+    #args = parser.parse_args()
+    mat_params = {}
+    print(material) 
+    # do a jank match-case because python 3.9 doesn't support this
+    if material == "YIG":
+        # citations 10.1088/0022-3727/48/1/015001
+        mat_params.update({"alpha":6.15E-5,  "Msat":141E3,       "Aex":3.7E-12,  "Ku1":0})
+    else: # we just assume it's cofeb
+        mat_params.update({"alpha":0.015,    "Msat": 1273E3,    "Aex": 10E-12,   "Ku1":1.5e6})
+    print(mat_params) 
+    parser.add_argument('--material', type=str, default="cofeb", help='Value for Exchange? (default: cofeb)')
     parser.add_argument('--alpha', type=float, default=mat_params["alpha"], help='Value for alpha (default: 0.01)')
     parser.add_argument('--Msat', type=float, default=mat_params["Msat"], help='Value for Saturation Magnetization (default: 1273E3)')
     parser.add_argument('--Aex', type=float, default=mat_params["Aex"], help='Value for Exchange stiffness J/m  (default: 10E-12)')
@@ -31,12 +42,17 @@ def main():
     # Parse the arguments
     args = parser.parse_args()
 
+    for arg in vars(args):
+        globals()[arg] = getattr(args, arg)
+
+
+    Bz = 0.005*np.exp(-temp/100)
     dirname = f"{material}_delta#{delta}_width#{width}_latticeconst#{lattice_constant}_temp#{temp}" 
 
-    fstring = f"// NUMERICAL PARAMETERS
+    fstring = f"""// NUMERICAL PARAMETERS
     fmax := 1.5e9    // maximum frequency (in Hz) of the sinc pulse
     T_tot := 400e-9  // simulation time (longer -> better frequency resolution)
-    del_t := 250e-12 // the sample time
+    del_t := 150e-12 // the sample time
 
     // Racetrack crystal settings:
     length := 200e-9
@@ -57,7 +73,7 @@ def main():
     setCellSize(dX, dY, dZ)
 
     // Material Constants
-    Bz := 0.005
+    Bz := {Bz}
     Msat = {Msat}
     Aex = {Aex}
     anisU = vector(0, 0, 1)
@@ -76,7 +92,7 @@ def main():
     singleR := racetrack.repeat(0, lattice_constant, 0).transl(0, width/2, 0)
     twoR := singleR.add(singleR.transl(0, delta, 0))
 
-    if AFM {
+    if AFM {{
             setgeom(twoR)
 
             // Define regions
@@ -84,11 +100,10 @@ def main():
             save(regions)
 
             m.setRegion(2, twoDomain(0, 0, -1, 1, 1, 0, 0, 0, 1))
-    } else {
+    }} else {{
             setgeom(singleR)
-    }
+    }}
 
-    // Define regions
     defRegion(1, singleR)
     defRegion(3, racetrack.transl(0, -Ly/2+width/2, 0))
     save(regions)
@@ -110,11 +125,11 @@ def main():
     temp.set({temp})
     j = vector(0, 0, 0)
     pol = 1
-    run(T_tot)"
+    run(T_tot)"""
 
     # Create a directory
-    os.makedirs(dirname, exist_ok=True)
     print(f"made dir {dirname}")
+    os.makedirs(dirname, exist_ok=True)
     # Change the current working directory to the new directory
     os.chdir(dirname)
     with open('run.mx3', 'w') as file:
@@ -134,5 +149,7 @@ def main():
             print(output.strip().decode())
 
     process.poll()
+    os.chdir("../")
     
-    
+
+main()
