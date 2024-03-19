@@ -2,7 +2,7 @@ import numpy as np
 
 class Material:
     def __init__(self, vector1, vector2, vector3, coordinates, names):
-        self.A = vector1  # Basis vector a1, a2, a3 as columns of the matrix A
+        self.A = np.array(vector1,vector2,vector3).T  # Basis vector a1, a2, a3 as columns of the matrix A
         self.atomic_positions = coordinates # coordinates in units of crystal basis vectors
         self.atomic_names = names
 
