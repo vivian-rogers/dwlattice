@@ -10,7 +10,7 @@ def genAtomicPositions(layer_numbers, materials):
     all_positions = []  # blank list
     total_number_layers = sum(layer_numbers)
     start_z = 0
-    for material_index in materials:  # iterate thru each material
+    for material_index in range(0,len(materials)-1):  # iterate thru each material
         material=materials[material_index]
         
         # I will now do a manipulation to strain this layer according to the 0th layer in the stack
