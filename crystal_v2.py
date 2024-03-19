@@ -19,8 +19,8 @@ def genAtomicPositions(layer_numbers, materials):
         strain_y = 1 - np.norm(material[0].A[:,2])/np.norm(material[material_index].A[:,2])
         print("Strain in x = " + strain_x*100 + " %, strain in y = ")
         # now, we will fix the other two 
-        material[material_index].A[:,1] = material[0].A[:,1]
-        material[material_index].A[:,1] = material[0].A[:,1]
+        materials[material_index].A[:,1] = material[0].A[:,1]
+        materials[material_index].A[:,1] = material[0].A[:,1]
         
         for layer_index in range(0, layer_numbers[material_index]-1):
             for i in range(len(material.atomic_names)):  # iterate thru each atom in each material
@@ -29,7 +29,7 @@ def genAtomicPositions(layer_numbers, materials):
                 # r = pa1 + qa2 + sa3
                 Ri_absolute = material.A*Ri_relative + start_z*[0, 0, 1]
                 all_positions.append({"Name": name, "Position": Ri_absolute})  # add atom to list
-            start_z += A[2,2] # add on the z component of the crystal lattice basis vector to stack up the supercell in z
+            start_z += materials[material_index].A[2,2] # add on the z component of the crystal lattice basis vector to stack up the supercell in z
     return all_positions
 
 # Example stack of Iron and Silicon Nitride
