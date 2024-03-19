@@ -14,7 +14,7 @@ def genAtomicPositions(layer_numbers, materials):
         material=materials[material_index]
         
         # I will now do a manipulation to strain this layer according to the 0th layer in the stack
-        volume_material = np.det(material.A) # gives the volume of the unit cell
+        volume_material = np.linalg.det(material.A) # gives the volume of the unit cell
         strain_x = 1 - np.norm(material[0].A[:,1])/np.norm(material[material_index].A[:,1])
         strain_y = 1 - np.norm(material[0].A[:,2])/np.norm(material[material_index].A[:,2])
         print("Strain in x = " + strain_x*100 + " %, strain in y = ")
