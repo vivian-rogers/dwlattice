@@ -10,27 +10,32 @@ def genAtomicPositions(layer_numbers, materials):
     all_positions = []  # blank list
     total_number_layers = sum(layer_numbers)
     start_z = 0
-    for material_index in range(0,len(materials)-1):  # iterate thru each material
-        material=materials[material_index]
+    for material_index in range(len(materials)):  # iterate thru each material
+        material = materials[material_index]
         
         # I will now do a manipulation to strain this layer according to the 0th layer in the stack
-        volume_material = np.linalg.det(material.A) # gives the volume of the unit cell
-        strain_x = 1 - np.norm(material[0].A[:,1])/np.norm(material[material_index].A[:,1])
-        strain_y = 1 - np.norm(material[0].A[:,2])/np.norm(material[material_index].A[:,2])
-        print("Strain in x = " + strain_x*100 + " %, strain in y = ")
-        # now, we will fix the other two 
-        materials[material_index].A[:,1] = material[0].A[:,1]
-        materials[material_index].A[:,1] = material[0].A[:,1]
+        volume_material = np.linalg.det(material.A)  # gives the volume of the unit cell
+        strain_x = 1 - np.linalg.norm(materials[0].A[:,1])/np.linalg.norm(material.A[:,1])
+        strain_y = 1 - np.linalg.norm(materials[0].A[:,2])/np.linalg.norm(material.A[:,2])
+        print(f"Strain in x = {strain_x*100} %, strain in y = {strain_y*100} %")
         
-        for layer_index in range(0, layer_numbers[material_index]-1):
+        # now, we will fix the other two 
+        material.A[:,1] = materials[0].A[:,1]
+        material.A[:,2] = materials[0].A[:,2]
+        
+        for layer_index in range(layer_numbers[material_index]):
             for i in range(len(material.atomic_names)):  # iterate thru each atom in each material
                 name = material.atomic_names[i]
-                Ri_relative = material.atomic_positions[i]  # get relative coordinates R of the ith atom
-                # r = pa1 + qa2 + sa3
-                Ri_absolute = material.A*Ri_relative + start_z*[0, 0, 1]
+                Ri_relative = np.array(material.atomic_positions[i])  # get relative coordinates R of the ith atom
+                
+                # r = pa1 + qa2 + sa3, matrix multiplication for coordinate transformation
+                Ri_absolute = material.A @ Ri_relative + start_z * np.array([0, 0, 1])
                 all_positions.append({"Name": name, "Position": Ri_absolute})  # add atom to list
-            start_z += materials[material_index].A[2,2] # add on the z component of the crystal lattice basis vector to stack up the supercell in z
+
+            start_z += material.A[2,2]  # add on the z component of the crystal lattice basis vector to stack up the supercell in z
+
     return all_positions
+
 
 # Example stack of Iron and Silicon Nitride
 Iron = Material([2.866, 0, 0], [0, 2.866, 0], [0, 0, 2.866], [[0, 0, 0]], ['Fe'])  # 1 atom in the unit cell
