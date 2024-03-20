@@ -36,6 +36,22 @@ def genAtomicPositions(layer_numbers, materials):
 
     return all_positions
 
+#function that counts the total number of atoms in the stack as well as how many of each element
+#takes the 'stack' as the input
+def count_atoms(atoms_list):
+    element_counts = {} #define an empty list
+    for atom in atoms_list: 
+        element = atom['Name']
+        if element in element_counts:#check for repeats
+            element_counts[element] += 1
+        else:
+            element_counts[element] = 1 #first occurrence, add to list
+
+    total_atoms = sum(element_counts.values())
+    print(f"{total_atoms} total atoms")
+    for element, count in element_counts.items(): # print each element + its corresponding count
+        print(f"{element}: {count} atom(s)")
+
 
 # Example stack of Iron and Silicon Nitride
 Iron = Material([2.866, 0, 0], [0, 2.866, 0], [0, 0, 2.866], [[0, 0, 0]], ['Fe'])  # 1 atom in the unit cell
@@ -43,9 +59,15 @@ Iron = Material([2.866, 0, 0], [0, 2.866, 0], [0, 0, 2.866], [[0, 0, 0]], ['Fe']
 # Silicon Nitride; Si-N bonds are 1.89 angstroms (materialsproject.org)
 SiliconNitride = Material([1.89, 0, 0], [0, 1.89, 0], [0, 0, 1.89], [[0.25, 0.25, 0.25], [0.5, 0.5, 0.5]], ['Si', 'N'])  # example using a compound
 
-materials = [Iron, SiliconNitride]
-list_of_atoms = genAtomicPositions([1, 2], materials)  # 2 layers with two materials
+materials = [Iron, SiliconNitride, Iron]
+list_of_atoms = genAtomicPositions([5,5,5], materials)  # 2 layers with two materials
+
+#atoms count
+count_atoms(list_of_atoms)
 
 # Output list
 for atom in list_of_atoms:
     print(f"{atom['Name']} : {atom['Position']}")
+    
+    
+    
